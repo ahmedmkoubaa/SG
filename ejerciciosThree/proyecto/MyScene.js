@@ -61,14 +61,23 @@ class MyScene extends THREE.Scene {
 	 // ------------------------------- EXAMEN ------------------------------- //
 	 // -----------------------------------------------------------------------//
 	 // CREACION DE OBJETOS
-	 var puntos = 20;
-	 var longitud = 30;
+	 this.factorNivel = 0.05; // incremento de dificultad entre un nivel y otro (es un valor entre 0 y 1)
+	 this.puntos = 20;
+	 this.longitud = 30;
+	 this.numeroObstaculos = 100;
 
-	 this.camino = new Camino(this.gui, "Controles del objeto", puntos, longitud);
-	 this.add(this.camino);
+	 var factor = 1;
+	 var tiempoEnMs = 1000 * (this.puntos + this.longitud) * factor;
 
 	 this.personaje = new Personaje(this.gui, "Controles del personaje");
 	 this.add(this.personaje);
+
+
+	 this.camino = new Camino(this.puntos, this.longitud, this.numeroObstaculos);
+	 this.add(this.camino);
+
+	 this.obstaculos = this.camino.posicionObstaculos;
+	 this.siguienteObstaculo = 0;
 
 	 // -----------------------------------------------------------------------//
 	 // CREACION DE ANIMACIONES
@@ -78,22 +87,43 @@ class MyScene extends THREE.Scene {
 
 	 // cambiando el tiempo cambiamos el tipo de
 	 // trayectoria, helicoidal o saltarina
-	 var factor = 1;
-	 var tiempoEnMs = 1000 * (puntos + longitud) * factor;
 
-	 var recorrerCamino = new TWEEN.Tween(origen).to(destino, tiempoEnMs);
+
+	 this.recorrerCamino = new TWEEN.Tween(origen).to(destino, tiempoEnMs);
+	 this.recorrerSiguiente = new TWEEN.Tween(origen).to(destino, tiempoEnMs);
 
 	 var that = this;
-	 recorrerCamino
+	 this.recorrerCamino
 	 .onUpdate(function(){
 		 that.actualizaPosicionEnSpline(that.personaje, that.camino.getSpline(), origen.y);
+		 that.comprobarColisiones();
 	 })
 	 .onComplete(function(){
 		 origen.y = 0.0;
-	 })
-	 .repeat(1/0);
+		 that.siguienteObstaculo = 0;
 
-	 recorrerCamino.start();
+		 that.siguienteNivel();
+		 that.recorrerSiguiente.start();
+	 })
+	 .chain(this.recorrerSiguiente);
+
+
+	 this.recorrerSiguiente
+	 .onUpdate(function(){
+		 that.actualizaPosicionEnSpline(that.personaje, that.camino.getSpline(), origen.y);
+		 that.comprobarColisiones();
+	 })
+	 .onComplete(function(){
+		 origen.y = 0.0;
+		 that.siguienteObstaculo = 0;
+
+		 that.siguienteNivel();
+		 that.recorrerCamino.start();
+	 })
+	 .chain(this.recorrerCamino);
+
+
+	 this.recorrerCamino.start();
 
 	 // -----------------------------------------------------------------------//
 	 // CREACION DE TRANSFORMACIONES ELEMENTALES
@@ -105,6 +135,19 @@ class MyScene extends THREE.Scene {
 	 // this.camera = this.personaje.camera;
   }
 
+  siguienteNivel() {
+	  this.remove(this.camino);
+
+	  this.puntos += this.factorNivel * this.puntos;
+	  this.longitud += this.factorNivel * this.longitud;
+
+	  this.camino = new Camino(this.puntos, this.longitud);
+	  this.add(this.camino);
+
+	  this.obstaculos = this.camino.posicionObstaculos;
+	  this.siguienteObstaculo = 0;
+  }
+
   actualizaPosicionEnSpline(objeto, spline, t){
 	  var posicion = spline.getPointAt(t);
 	  objeto.position.copy(posicion);
@@ -113,6 +156,36 @@ class MyScene extends THREE.Scene {
 	  posicion.add(tangente);
 
 	  objeto.lookAt(posicion);
+  }
+
+  comprobarColisiones() {
+	  var posicion = this.personaje.position.clone();
+	  var posicionActor = this.personaje.actor.position.clone();
+	  var rotacionActual = this.personaje.rotation.clone();
+
+	  posicionActor.applyAxisAngle(new THREE.Vector3(1, 0, 0), +rotacionActual.x);
+	  posicionActor.applyAxisAngle(new THREE.Vector3(0, 1, 0), +rotacionActual.y);
+	  posicionActor.applyAxisAngle(new THREE.Vector3(0, 0, 1), +rotacionActual.z);
+
+	  posicion.x += posicionActor.x;
+	  posicion.y += posicionActor.y;
+	  posicion.z += posicionActor.z;
+
+	  var siguiente = this.siguienteObstaculo;
+	  siguiente %= this.obstaculos.length;
+
+	  if ((siguiente+1 < this.obstaculos.length)  			 &&
+		 posicion.distanceTo(this.obstaculos[siguiente]) >
+			 posicion.distanceTo(this.obstaculos[siguiente+1])) {
+
+			 // avanzamos al siguiente al siquiente
+			 siguiente++;
+			 this.siguienteObstaculo++;
+	  }
+
+	  if (posicion.distanceTo(this.obstaculos[siguiente]) < 1) {
+		  alert("Ha habido colisión");
+	  }
   }
 
   createCamera () {

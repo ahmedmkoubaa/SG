@@ -2,13 +2,13 @@ import * as THREE from '../libs/three.module.js'
 import * as TWEEN from '../libs/tween.esm.js'
 
 class Camino extends THREE.Object3D {
-	constructor (gui, titleGui, puntos = 10, longitud = 10){
+	constructor (puntos = 10, longitud = 10, numeroObstaculos = 10, maxDesplzamientoObstaculo = 5){
 		super();
-		this.createGUI(gui, titleGui);
+		// this.createGUI(gui, titleGui);
 
 		this.spline = this.generarRecorridoAleatorio(puntos, longitud);
 		var forma = this.crearFormaDeTunelCircular();
-		this.generarObstaculos(this.spline, 100, 5);
+		this.generarObstaculos(this.spline, numeroObstaculos, maxDesplzamientoObstaculo );
 
 		var options = {bevelEnabled: false, depth : 1 , steps : puntos * puntos , curveSegments : 5, extrudePath: this.spline};
 
@@ -32,7 +32,9 @@ class Camino extends THREE.Object3D {
 			new THREE.MeshNormalMaterial({color: 0xffffff})
 		);
 
-		for (var i = 0; i < numeroObstaculos; i++){
+		this.posicionObstaculos = [];
+
+		for (var i = 1; i < numeroObstaculos; i++){
 			var pos = spline.getPointAt(i/numeroObstaculos);
 			// Generamos una dispersion alatoria del punto encontrado
 			// var dispersionAleatoria = -maxDispersion + 2 * Math.random() * maxDispersion;
@@ -55,7 +57,10 @@ class Camino extends THREE.Object3D {
 			}
 
 			obstaculo.position.set(pos.x, pos.y, pos.z);
-			this.add(obstaculo.clone());
+			var copia = obstaculo.clone();
+			this.posicionObstaculos.push(copia.position);
+
+			this.add(copia);
 		}
 	}
 
@@ -63,7 +68,7 @@ class Camino extends THREE.Object3D {
 	crearFormaDeTunelCircular(){
 		var forma = new THREE.Shape();
 
-		var grosor = 5;	// Para asignar el tamanio interior en funcion del exterior
+		var grosor = 1;	// Para asignar el tamanio interior en funcion del exterior
 
 		var tamnanioExterior = 10;
 		var tamanioInterior = (tamnanioExterior - grosor);
@@ -180,10 +185,10 @@ class Camino extends THREE.Object3D {
 
 	update(){
 		// CREACION DE UPDATES
-		this.rotation.y += this.guiControls.incrementoRotacion;
-		this.position.x = this.guiControls.posX;
-		this.position.z = this.guiControls.posZ;
-		this.position.y = this.guiControls.posY;
+		// this.rotation.y += this.guiControls.incrementoRotacion;
+		// this.position.x = this.guiControls.posX;
+		// this.position.z = this.guiControls.posZ;
+		// this.position.y = this.guiControls.posY;
 	}
 
 	actualizaAnimacion(objeto, t){
