@@ -42,7 +42,7 @@ class MyLoadedModel extends THREE.Object3D {
 	}
 
 	update(){
-		console.log("Soy el modelo cargado, me actualizo");
+
 	}
 }
 

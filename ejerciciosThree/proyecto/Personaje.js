@@ -1,4 +1,5 @@
 import * as THREE from '../libs/three.module.js';
+import { MyLoadedModel } from './MyLoadedModel.js'
 
 class Personaje extends THREE.Object3D {
 	constructor (gui, titleGui){
@@ -7,22 +8,25 @@ class Personaje extends THREE.Object3D {
 
 		// CREACION DE OBJETOS
 		var texture = new THREE.TextureLoader().load('../imgs/cara.jpg');
-		var material = new THREE.MeshPhongMaterial ({map: texture});
+		var material = new THREE.MeshNormalMaterial ({color: 0xff0000});
 
 		this.actor = new THREE.Mesh(
-			new THREE.SphereBufferGeometry(2, 10, 10),
+			new THREE.SphereBufferGeometry(2, 20, 20),
 			material
 		);
 
-
-
+		// this.actor = new MyLoadedModel('../models/pez/fish.mtl','../models/pez/fish.obj' );
 		this.add(this.actor);
-		this.actor.position.y = this.actor.geometry.parameters.radius + 1; // + 1
+		// this.actor.position.y = this.actor.geometry.parameters.radius + 1; // + 1
 
 		this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-		this.camera.position.set(5, 5, -10);
-		this.camera.lookAt(this.actor.position);
+		this.camera.position.set(0, 5, -15);
 
+		var pos = new THREE.Vector3().copy( this.actor.position);
+		// pos.y += this.actor.geometry.parameters.radius;
+		pos.z += 10;
+
+		this.camera.lookAt(pos);
 
 		this.add (this.camera);
 
@@ -30,8 +34,6 @@ class Personaje extends THREE.Object3D {
 
 		// CREACION DE TRANSFORMACIONES ELEMENTALES
 		this.actor.rotation.y = Math.PI;
-		this.actor.scale.y += 0.5;
-		// this.actor.position.y/
 
 	}
 
@@ -48,8 +50,7 @@ class Personaje extends THREE.Object3D {
 
 	update(){
 		// CREACION DE UPDATES
-		this.actor.position.x = -2 * this.guiControls.carril;
-		this.actor.rotation.y += 0.01;
+		this.actor.position.x = -5 * this.guiControls.carril;
 
 	}
 };

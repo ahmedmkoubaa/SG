@@ -6,32 +6,14 @@ class Camino extends THREE.Object3D {
 		super();
 		this.createGUI(gui, titleGui);
 
-		// this.spline = this.generarRecorridoSimple(max);
 		this.spline = this.generarRecorridoAleatorio(puntos, longitud);
-
-		var forma = new THREE.Shape();
-
-		forma.moveTo(0, 2);
-		// forma.bezierCurveTo( +1, +1, -1, +1, -1, -1 );
-		forma.lineTo(0.2, 2);
-		forma.lineTo(0.2, -2);
-		forma.lineTo(0, -2);
-
-		// var heartShape = new THREE.Shape();
-		// var x = 0; var y = 0;
-		//
-		// heartShape.moveTo( x + 5/5, y + 1/5 );
-		// heartShape.bezierCurveTo( x + 5/5, y + 5/5, x + 4/5, y, x, y );
-		// heartShape.bezierCurveTo( x - 6/5, y, x - 6/5, y + 7/5,x - 6/5, y + 7/5 );
-		// heartShape.bezierCurveTo( x - 6/5, y + 11/5, x - 3/5, y + 15.4/5, x + 5/5, y + 19/5 );
-		// heartShape.bezierCurveTo( x + 12/5, y + 15.4/5, x + 16/5, y + 11/5, x + 16/5, y + 7/5 );
-		// heartShape.bezierCurveTo( x + 16/5, y + 7/5, x + 16/5, y, x + 10/5, y );
-		// heartShape.bezierCurveTo( x + 7/5, y, x + 5/5, y + 5/5, x + 5/5, y + 5/5 );
+		var forma = this.crearFormaDeTunelCircular();
+		this.generarObstaculos(this.spline, 100, 5);
 
 		var options = {bevelEnabled: false, depth : 1 , steps : puntos * puntos , curveSegments : 5, extrudePath: this.spline};
 
 		var geometry = new THREE.ExtrudeBufferGeometry(forma, options);
-		var material = new THREE.MeshNormalMaterial( { color: 0xf10012 } );
+		var material = new THREE.MeshNormalMaterial({color: 0x0000fe});
 		var caminoConForma = new THREE.Mesh( geometry, material ) ;
 
 		var linea = new THREE.Geometry();
@@ -41,6 +23,68 @@ class Camino extends THREE.Object3D {
 
 		this.add(visibleSpline);
 		this.add( caminoConForma );
+	}
+
+	// Genera objetos y los dispersa por el camino pasado como parametro
+	generarObstaculos(spline, numeroObstaculos, maxDispersion) {
+		var obstaculo = new THREE.Mesh(
+			new THREE.SphereBufferGeometry(1),
+			new THREE.MeshNormalMaterial({color: 0xffffff})
+		);
+
+		for (var i = 0; i < numeroObstaculos; i++){
+			var pos = spline.getPointAt(i/numeroObstaculos);
+			// Generamos una dispersion alatoria del punto encontrado
+			// var dispersionAleatoria = -maxDispersion + 2 * Math.random() * maxDispersion;
+			//
+			// switch (i%2) {
+			// 	case 0: pos.x += dispersionAleatoria; break;
+			// 	case 1: pos.y += dispersionAleatoria; break;
+			// 	default: console.log("Ha ocurrido un error"); break;
+			//
+			// }
+
+			var aleatorio = Math.floor(Math.random() * 5);
+
+			switch (aleatorio % 5) {
+				case 0: pos.x -= maxDispersion; break;	// izquierda
+				case 1: pos.y += maxDispersion; break; // arriba
+				case 2: pos.x += maxDispersion; break;	// derecha
+				case 3: pos.y -= maxDispersion; break;	// abajo
+				default: break;
+			}
+
+			obstaculo.position.set(pos.x, pos.y, pos.z);
+			this.add(obstaculo.clone());
+		}
+	}
+
+	// Devuelve una forma circular con un agujero, realmente devuelve un marco redondo
+	crearFormaDeTunelCircular(){
+		var forma = new THREE.Shape();
+
+		var grosor = 5;	// Para asignar el tamanio interior en funcion del exterior
+
+		var tamnanioExterior = 10;
+		var tamanioInterior = (tamnanioExterior - grosor);
+
+		var factor = 2; // Para estirar en las curvas cuadraticas
+
+
+		forma.moveTo( tamnanioExterior , tamnanioExterior);
+		forma.quadraticCurveTo( factor*tamnanioExterior ,-tamnanioExterior/2, tamnanioExterior ,-tamnanioExterior);
+		forma.quadraticCurveTo(-tamnanioExterior/2 ,factor*-tamnanioExterior, -tamnanioExterior ,-tamnanioExterior);
+		forma.quadraticCurveTo(factor*-tamnanioExterior , tamnanioExterior/2, -tamnanioExterior , tamnanioExterior);
+		forma.quadraticCurveTo( tamnanioExterior/2 , factor*tamnanioExterior, tamnanioExterior , tamnanioExterior);
+
+
+		forma.quadraticCurveTo( tamanioInterior, tamanioInterior,  tamanioInterior, tamanioInterior);
+		forma.quadraticCurveTo(-tamanioInterior/2, factor*tamanioInterior, -tamanioInterior, tamanioInterior);
+		forma.quadraticCurveTo(factor*-tamanioInterior,-tamanioInterior/2, -tamanioInterior,-tamanioInterior);
+		forma.quadraticCurveTo( tamanioInterior/2,factor*-tamanioInterior,  tamanioInterior,-tamanioInterior);
+		forma.quadraticCurveTo( factor*tamanioInterior, tamanioInterior/2,  tamanioInterior, tamanioInterior);
+
+		return forma;
 	}
 
 	getSpline(){
@@ -59,19 +103,17 @@ class Camino extends THREE.Object3D {
 		return (new THREE.CatmullRomCurve3(ptsSpline));
 	}
 
-	rotaciones(){
-		// eye(Y) =  cos(angulo(X)) * pos(Y) - sin(angulo(X)) * pos(Z);
-		// eye(Z) =  sin(angulo(X)) * pos(Y) + cos(angulo(X)) * pos(Z);
-		// eye(X) =  cos(angulo(Y)) * pos(X) + sin(angulo(Y)) * pos(Z);
-	}
-
-	generarRecorridoAleatorio(puntos = 10, longitud = 10) {
+	// Genera un recorrido totalmente aleatorio formado por tantos puntos como se indique
+	// con puntos separados por una longitud maxima pasada como parametro
+	// y el angulo maximo de rotacion entre un punto y el siguiente viene indicado
+	// por angulo
+	generarRecorridoAleatorio(puntos = 10, longitud = 10, angulo = Math.PI/5) {
 		var ptsSpline = [];
 		var numeroGenerarPuntos = puntos;
 		var maxLongitud = longitud;
-		var maxAngulo = Math.PI * 2; // son radines
+		var maxAngulo = angulo; // Math.PI; // son radines
 
-		var origen = {x: longitud, y: longitud, z: longitud};
+		var origen = {x: 0, y: 0, z: 0};
 		var anterior = origen;
 
 		for (var i = 0; i < numeroGenerarPuntos; i++) {
@@ -79,9 +121,10 @@ class Camino extends THREE.Object3D {
 		   var y = anterior.y;
 		   var z = anterior.z;
 
+			var nuevoAngulo = Math.random() * maxAngulo;
+		   var nuevaLongitud = maxLongitud + Math.random() * maxLongitud;
 
-			var nuevoAngulo = -maxAngulo + 2*Math.random() * maxAngulo;
-		   var nuevaLongitud = Math.random() * maxLongitud;
+			nuevaLongitud = maxLongitud;
 
 			switch (i%3) {
 				case 0: x = Math.cos(nuevoAngulo) * anterior.x + Math.sin(nuevoAngulo) * anterior.z;
@@ -94,7 +137,7 @@ class Camino extends THREE.Object3D {
 
 				case 2: z = Math.sin(-nuevoAngulo) * anterior.z + Math.cos(-nuevoAngulo) * anterior.x;
 						  x = Math.cos(nuevoAngulo) * anterior.x + Math.sin(nuevoAngulo) * anterior.z;
-						 break;
+						  break;
 
 			  default: break;
 		   }

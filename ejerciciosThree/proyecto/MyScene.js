@@ -12,6 +12,7 @@ import * as TWEEN from '../libs/tween.esm.js'
 import { Camino } from './Camino.js'
 import { Personaje } from './Personaje.js'
 import { ClasePlantilla } from './ClasePlantilla.js'
+import { MyLoadedModel } from './MyLoadedModel.js'
 
 /// La clase fachada del modelo
 /**
@@ -61,15 +62,13 @@ class MyScene extends THREE.Scene {
 	 // -----------------------------------------------------------------------//
 	 // CREACION DE OBJETOS
 	 var puntos = 20;
-	 this.camino = new Camino(this.gui, "Controles del objeto", puntos);
+	 var longitud = 30;
+
+	 this.camino = new Camino(this.gui, "Controles del objeto", puntos, longitud);
 	 this.add(this.camino);
 
 	 this.personaje = new Personaje(this.gui, "Controles del personaje");
 	 this.add(this.personaje);
-
-	 console.log(this.personaje.cajaPrueba);
-
-	 this.spline = this.camino.getSpline();
 
 	 // -----------------------------------------------------------------------//
 	 // CREACION DE ANIMACIONES
@@ -79,13 +78,13 @@ class MyScene extends THREE.Scene {
 
 	 // cambiando el tiempo cambiamos el tipo de
 	 // trayectoria, helicoidal o saltarina
-	 var factor = 2;
-	 var tiempoEnMs = 1000 * puntos * factor;
+	 var factor = 1;
+	 var tiempoEnMs = 1000 * (puntos + longitud) * factor;
 
-	 var correr = new TWEEN.Tween(origen).to(destino, tiempoEnMs);
+	 var recorrerCamino = new TWEEN.Tween(origen).to(destino, tiempoEnMs);
 
 	 var that = this;
-	 correr
+	 recorrerCamino
 	 .onUpdate(function(){
 		 that.actualizaPosicionEnSpline(that.personaje, that.camino.getSpline(), origen.y);
 	 })
@@ -94,7 +93,7 @@ class MyScene extends THREE.Scene {
 	 })
 	 .repeat(1/0);
 
-	 correr.start();
+	 recorrerCamino.start();
 
 	 // -----------------------------------------------------------------------//
 	 // CREACION DE TRANSFORMACIONES ELEMENTALES
@@ -172,7 +171,7 @@ class MyScene extends THREE.Scene {
       // En el contexto de una función   this   alude a la función
       this.lightIntensity = 0.5;
       this.axisOnOff = true;
-		this.cameraPersonaje = false;
+		this.cameraPersonaje = true;
     }
 
     // Se crea una sección para los controles de esta clase
