@@ -96,7 +96,6 @@ class MyScene extends THREE.Scene {
 	 this.recorrerCamino
 	 .onUpdate(function(){
 		 that.actualizaPosicionEnSpline(that.personaje, that.camino.getSpline(), origen.y);
-		 that.comprobarColisiones();
 	 })
 	 .onComplete(function(){
 		 origen.y = 0.0;
@@ -111,7 +110,6 @@ class MyScene extends THREE.Scene {
 	 this.recorrerSiguiente
 	 .onUpdate(function(){
 		 that.actualizaPosicionEnSpline(that.personaje, that.camino.getSpline(), origen.y);
-		 that.comprobarColisiones();
 	 })
 	 .onComplete(function(){
 		 origen.y = 0.0;
@@ -139,9 +137,10 @@ class MyScene extends THREE.Scene {
 	  this.remove(this.camino);
 
 	  this.puntos += this.factorNivel * this.puntos;
-	  this.longitud += this.factorNivel * this.longitud;
+	  // this.longitud += this.factorNivel * this.longitud;
+	  this.numeroObstaculos += this.factorNivel * this.numeroObstaculos;
 
-	  this.camino = new Camino(this.puntos, this.longitud);
+	  this.camino = new Camino(this.puntos, this.longitud, this.numeroObstaculos);
 	  this.add(this.camino);
 
 	  this.obstaculos = this.camino.posicionObstaculos;
@@ -332,7 +331,10 @@ class MyScene extends THREE.Scene {
 	 // CREACION DE UPDATES
 	 this.camino.update();
 	 this.personaje.update();
+
 	 TWEEN.update();
+
+	 // this.comprobarColisiones();
 
 	 var camaraFinal;
 	 if (this.guiControls.cameraPersonaje) {

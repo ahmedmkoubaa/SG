@@ -10,11 +10,29 @@ class Camino extends THREE.Object3D {
 		var forma = this.crearFormaDeTunelCircular();
 		this.generarObstaculos(this.spline, numeroObstaculos, maxDesplzamientoObstaculo );
 
-		var options = {bevelEnabled: false, depth : 1 , steps : puntos * puntos , curveSegments : 5, extrudePath: this.spline};
+		var options = {bevelEnabled: false, depth : 1 , steps : puntos * puntos , curveSegments : 1, extrudePath: this.spline};
+
+		var textureFront = new THREE.ImageUtils.loadTexture( '../imgs/water.jpg');
+		var textureSide = new THREE.ImageUtils.loadTexture( '../imgs/water.jpg');
+		var materialFront = new THREE.MeshBasicMaterial( { map: textureFront } );
+		var materialSide = new THREE.MeshBasicMaterial( { map: textureSide } );
+
+		// todo esto esta mal la verdad es una perdida de tiempo
+		materialSide.map.repeat.set(0.1, 0.1);
+		materialFront.map.repeat.set(0.1, 0.1);
+
+		materialSide.wrapS = THREE.ClampToEdgeWrapping;
+		materialSide.wrapT = THREE.ClampToEdgeWrapping;
+		materialFront.wrapS = THREE.ClampToEdgeWrapping;
+		materialFront.wrapT = THREE.ClampToEdgeWrapping;
+
+
+		var materialArray = [ materialFront, materialSide ];
+		var faceMaterial = new THREE.MeshFaceMaterial(materialArray);
 
 		var geometry = new THREE.ExtrudeBufferGeometry(forma, options);
-		var material = new THREE.MeshNormalMaterial({color: 0x0000fe});
-		var caminoConForma = new THREE.Mesh( geometry, material ) ;
+		var material = new THREE.MeshNormalMaterial({flatShading: true, shading: THREE.SmoothShading });
+		var caminoConForma = new THREE.Mesh( geometry, faceMaterial ) ;
 
 		var linea = new THREE.Geometry();
 		linea.vertices = this.spline.getPoints(100);
