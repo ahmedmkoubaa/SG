@@ -1,56 +1,44 @@
 import * as THREE from '../libs/three.module.js'
 import * as TWEEN from '../libs/tween.esm.js'
+import { MyLoadedModel } from './MyLoadedModel.js'
 
 class Camino extends THREE.Object3D {
-	constructor (puntos = 10, longitud = 10, numeroObstaculos = 10, maxDesplzamientoObstaculo = 5){
+	constructor (puntos = 10, longitud = 10, numeroObstaculos = 10, maxDesplzamientoObstaculo = 5, maxRadio = 10){
 		super();
 		// this.createGUI(gui, titleGui);
 
 		this.spline = this.generarRecorridoAleatorio(puntos, longitud);
-		var forma = this.crearFormaDeTunelCircular();
+		var forma = this.crearFormaDeTunelCircular(maxRadio);
 		this.generarObstaculos(this.spline, numeroObstaculos, maxDesplzamientoObstaculo );
 
-		var options = {bevelEnabled: false, depth : 1 , steps : puntos * puntos , curveSegments : 1, extrudePath: this.spline};
-
-		var textureFront = new THREE.ImageUtils.loadTexture( '../imgs/water.jpg');
-		var textureSide = new THREE.ImageUtils.loadTexture( '../imgs/water.jpg');
-		var materialFront = new THREE.MeshBasicMaterial( { map: textureFront } );
-		var materialSide = new THREE.MeshBasicMaterial( { map: textureSide } );
-
-		// todo esto esta mal la verdad es una perdida de tiempo
-		materialSide.map.repeat.set(0.1, 0.1);
-		materialFront.map.repeat.set(0.1, 0.1);
-
-		materialSide.wrapS = THREE.ClampToEdgeWrapping;
-		materialSide.wrapT = THREE.ClampToEdgeWrapping;
-		materialFront.wrapS = THREE.ClampToEdgeWrapping;
-		materialFront.wrapT = THREE.ClampToEdgeWrapping;
-
-
-		var materialArray = [ materialFront, materialSide ];
-		var faceMaterial = new THREE.MeshFaceMaterial(materialArray);
+		var options = {bevelEnabled: false, depth : 1 , steps : puntos * puntos , curveSegments : 5, extrudePath: this.spline};
+		var textura = new THREE.TextureLoader().load( '../imgs/wood.jpg');
 
 		var geometry = new THREE.ExtrudeBufferGeometry(forma, options);
-		var material = new THREE.MeshNormalMaterial({flatShading: true, shading: THREE.SmoothShading });
-		var caminoConForma = new THREE.Mesh( geometry, faceMaterial ) ;
+		var material = new THREE.MeshNormalMaterial({
+			// transparent: true,
+			opacity: 0.5,
+			side: THREE.BackSide,
+			smoothShading: true,
+			// color: 0x0000FF,
+			// map: textura
+		});
+		var caminoConForma = new THREE.Mesh( geometry, material ) ;
 
-		var linea = new THREE.Geometry();
-		linea.vertices = this.spline.getPoints(100);
-		var material = new THREE.LineBasicMaterial({color: 0xff0000});
-		var visibleSpline = new THREE.Line(linea, material);
+		// var linea = new THREE.Geometry();
+		// linea.vertices = this.spline.getPoints(100);
+		// var material = new THREE.LineBasicMaterial({color: 0xff0000});
+		// var visibleSpline = new THREE.Line(linea, material);
 
-		this.add(visibleSpline);
+		// this.add(visibleSpline);
 		this.add( caminoConForma );
 	}
 
 	// Genera objetos y los dispersa por el camino pasado como parametro
 	generarObstaculos(spline, numeroObstaculos, maxDispersion) {
-		var obstaculo = new THREE.Mesh(
-			new THREE.SphereBufferGeometry(1),
-			new THREE.MeshNormalMaterial({color: 0xffffff})
-		);
+		this.obstaculosGenerados = [];
 
-		this.posicionObstaculos = [];
+		// var obstaculoOriginal = this.getNuevoObstaculo();
 
 		for (var i = 1; i < numeroObstaculos; i++){
 			var pos = spline.getPointAt(i/numeroObstaculos);
@@ -64,50 +52,83 @@ class Camino extends THREE.Object3D {
 			//
 			// }
 
-			var aleatorio = Math.floor(Math.random() * 5);
+			var sitio = Math.floor(Math.random() * 5);
+			var dispersion = maxDispersion;
+			// var dispersion = -maxDispersion + 2 * Math.random() * maxDispersion;
 
-			switch (aleatorio % 5) {
-				case 0: pos.x -= maxDispersion; break;	// izquierda
-				case 1: pos.y += maxDispersion; break; // arriba
-				case 2: pos.x += maxDispersion; break;	// derecha
-				case 3: pos.y -= maxDispersion; break;	// abajo
+			switch (sitio % 5) {
+				case 0: pos.x -= dispersion; break;	// izquierda
+				case 1: pos.y += dispersion; break; // arriba
+				case 2: pos.x += dispersion; break;	// derecha
+				case 3: pos.y -= dispersion; break;	// abajo
 				default: break;
 			}
 
-			obstaculo.position.set(pos.x, pos.y, pos.z);
-			var copia = obstaculo.clone();
-			this.posicionObstaculos.push(copia.position);
+			var obstaculo = this.getNuevoObstaculo();
+			// var obstaculo = obstaculoOriginal.clone();
 
-			this.add(copia);
+			obstaculo.position.set(pos.x, pos.y, pos.z);
+			this.obstaculosGenerados.push(obstaculo);
 		}
+
+		var size = this.obstaculosGenerados.length;
+		for (var i = 0; i < size; i++)
+			this.add(this.obstaculosGenerados[i]);
+
+
+		// añadir aqui fuera el resto de elementos del vectori
+	}
+
+	// Metodo que devuelve un obstaculo
+	getNuevoObstaculo() {
+		// Cambiando esta definicion, podemos cambiar todos
+		// los obstaculos generados
+		return new THREE.Mesh(
+			new THREE.SphereBufferGeometry(1),
+			new THREE.MeshNormalMaterial()
+		);
+
+		var rutaMtl = '../models/virus/microbe.mtl';
+		var rutaObj = '../models/virus/microbe.obj';
+		var modelo = new MyLoadedModel(rutaMtl, rutaObj);
+		// modelo.scale.set(0.5, 0.5, 0.5);
+		return modelo;
 	}
 
 	// Devuelve una forma circular con un agujero, realmente devuelve un marco redondo
-	crearFormaDeTunelCircular(){
-		var forma = new THREE.Shape();
+	crearFormaDeTunelCircular(circleRadius = 10){
+		// var forma = new THREE.Shape();
+		//
+		// var grosor = 1;	// Para asignar el tamanio interior en funcion del exterior
+		//
+		// var tamnanioExterior = 10;
+		// var tamanioInterior = (tamnanioExterior - grosor);
+		//
+		// var factor = 2; // Para estirar en las curvas cuadraticas
+		//
+		//
+		// forma.moveTo( tamnanioExterior , tamnanioExterior);
+		// forma.quadraticCurveTo( factor*tamnanioExterior ,-tamnanioExterior/2, tamnanioExterior ,-tamnanioExterior);
+		// forma.quadraticCurveTo(-tamnanioExterior/2 ,factor*-tamnanioExterior, -tamnanioExterior ,-tamnanioExterior);
+		// forma.quadraticCurveTo(factor*-tamnanioExterior , tamnanioExterior/2, -tamnanioExterior , tamnanioExterior);
+		// forma.quadraticCurveTo( tamnanioExterior/2 , factor*tamnanioExterior, tamnanioExterior , tamnanioExterior);
+		//
+		//
+		// forma.quadraticCurveTo( tamanioInterior, tamanioInterior,  tamanioInterior, tamanioInterior);
+		// forma.quadraticCurveTo(-tamanioInterior/2, factor*tamanioInterior, -tamanioInterior, tamanioInterior);
+		// forma.quadraticCurveTo(factor*-tamanioInterior,-tamanioInterior/2, -tamanioInterior,-tamanioInterior);
+		// forma.quadraticCurveTo( tamanioInterior/2,factor*-tamanioInterior,  tamanioInterior,-tamanioInterior);
+		// forma.quadraticCurveTo( factor*tamanioInterior, tamanioInterior/2,  tamanioInterior, tamanioInterior);
+		//
+		//
+		// return forma;
 
-		var grosor = 1;	// Para asignar el tamanio interior en funcion del exterior
+		var shape = new THREE.Shape();
+		shape.moveTo( circleRadius, 0 );
+		shape.absarc( 0, 0, circleRadius, 0, 2 * Math.PI, false );
 
-		var tamnanioExterior = 10;
-		var tamanioInterior = (tamnanioExterior - grosor);
+		return shape;
 
-		var factor = 2; // Para estirar en las curvas cuadraticas
-
-
-		forma.moveTo( tamnanioExterior , tamnanioExterior);
-		forma.quadraticCurveTo( factor*tamnanioExterior ,-tamnanioExterior/2, tamnanioExterior ,-tamnanioExterior);
-		forma.quadraticCurveTo(-tamnanioExterior/2 ,factor*-tamnanioExterior, -tamnanioExterior ,-tamnanioExterior);
-		forma.quadraticCurveTo(factor*-tamnanioExterior , tamnanioExterior/2, -tamnanioExterior , tamnanioExterior);
-		forma.quadraticCurveTo( tamnanioExterior/2 , factor*tamnanioExterior, tamnanioExterior , tamnanioExterior);
-
-
-		forma.quadraticCurveTo( tamanioInterior, tamanioInterior,  tamanioInterior, tamanioInterior);
-		forma.quadraticCurveTo(-tamanioInterior/2, factor*tamanioInterior, -tamanioInterior, tamanioInterior);
-		forma.quadraticCurveTo(factor*-tamanioInterior,-tamanioInterior/2, -tamanioInterior,-tamanioInterior);
-		forma.quadraticCurveTo( tamanioInterior/2,factor*-tamanioInterior,  tamanioInterior,-tamanioInterior);
-		forma.quadraticCurveTo( factor*tamanioInterior, tamanioInterior/2,  tamanioInterior, tamanioInterior);
-
-		return forma;
 	}
 
 	getSpline(){

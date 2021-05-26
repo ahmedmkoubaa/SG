@@ -2,7 +2,7 @@ import * as THREE from '../libs/three.module.js';
 import { MyLoadedModel } from './MyLoadedModel.js'
 
 class Personaje extends THREE.Object3D {
-	constructor (gui, titleGui){
+	constructor (gui, titleGui, maxDesplzamiento){
 		super();
 		this.createGUI(gui, titleGui);
 
@@ -29,11 +29,14 @@ class Personaje extends THREE.Object3D {
 		this.camera.lookAt(pos);
 
 		this.add (this.camera);
+		this.maxDesplzamiento = maxDesplzamiento;
 
 		// CREACION DE ANIMACIONES
 
 		// CREACION DE TRANSFORMACIONES ELEMENTALES
 		this.actor.rotation.y = Math.PI;
+
+		this.name = "Nodo personaje";
 
 	}
 
@@ -48,9 +51,29 @@ class Personaje extends THREE.Object3D {
 		folder.add(this.guiControls, 'carril', -1, 1, 1).name("Carril: ").listen();
 	}
 
+	goUp(){
+		if ( this.actor.position.y < this.maxDesplzamiento )
+			this.actor.position.y += 5;
+	}
+
+	goDown() {
+		if ( this.actor.position.y > -this.maxDesplzamiento )
+			this.actor.position.y -= 5;
+	}
+
+	goLeft() {
+		if ( this.actor.position.x < this.maxDesplzamiento )
+			this.actor.position.x += 5;
+	}
+
+	goRight() {
+		if ( this.actor.position.x > -this.maxDesplzamiento )
+			this.actor.position.x -= 5;
+	}
+
 	update(){
 		// CREACION DE UPDATES
-		this.actor.position.x = -5 * this.guiControls.carril;
+
 
 	}
 };

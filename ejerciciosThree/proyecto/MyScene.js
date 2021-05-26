@@ -61,22 +61,26 @@ class MyScene extends THREE.Scene {
 	 // ------------------------------- EXAMEN ------------------------------- //
 	 // -----------------------------------------------------------------------//
 	 // CREACION DE OBJETOS
-	 this.factorNivel = 0.05; // incremento de dificultad entre un nivel y otro (es un valor entre 0 y 1)
+	 this.raycaster = new THREE.Raycaster ();  // To select boxes
+
+
+	 this.factorNivel = 0.01; // incremento de dificultad entre un nivel y otro (es un valor entre 0 y 1)
 	 this.puntos = 20;
 	 this.longitud = 30;
 	 this.numeroObstaculos = 100;
+	 this.maxDesplzamiento = 5;
 
-	 var factor = 1;
+	 var factor = 1.25;
 	 var tiempoEnMs = 1000 * (this.puntos + this.longitud) * factor;
 
-	 this.personaje = new Personaje(this.gui, "Controles del personaje");
+	 this.personaje = new Personaje(this.gui, "Controles del personaje", this.maxDesplzamiento);
 	 this.add(this.personaje);
 
 
 	 this.camino = new Camino(this.puntos, this.longitud, this.numeroObstaculos);
 	 this.add(this.camino);
 
-	 this.obstaculos = this.camino.posicionObstaculos;
+	 this.obstaculos = this.camino.obstaculosGenerados;
 	 this.siguienteObstaculo = 0;
 
 	 // -----------------------------------------------------------------------//
@@ -99,10 +103,10 @@ class MyScene extends THREE.Scene {
 	 })
 	 .onComplete(function(){
 		 origen.y = 0.0;
-		 that.siguienteObstaculo = 0;
+		 // that.siguienteObstaculo = 0;
 
-		 that.siguienteNivel();
-		 that.recorrerSiguiente.start();
+		 that.pasarDeNivel();
+		 // that.recorrerSiguiente.start();
 	 })
 	 .chain(this.recorrerSiguiente);
 
@@ -113,10 +117,10 @@ class MyScene extends THREE.Scene {
 	 })
 	 .onComplete(function(){
 		 origen.y = 0.0;
-		 that.siguienteObstaculo = 0;
+		 // that.siguienteObstaculo = 0;
 
-		 that.siguienteNivel();
-		 that.recorrerCamino.start();
+		 that.pasarDeNivel();
+		 // that.recorrerCamino.start();
 	 })
 	 .chain(this.recorrerCamino);
 
@@ -133,17 +137,17 @@ class MyScene extends THREE.Scene {
 	 // this.camera = this.personaje.camera;
   }
 
-  siguienteNivel() {
+  pasarDeNivel() {
 	  this.remove(this.camino);
-
 	  this.puntos += this.factorNivel * this.puntos;
+
 	  // this.longitud += this.factorNivel * this.longitud;
-	  this.numeroObstaculos += this.factorNivel * this.numeroObstaculos;
+	  this.numeroObstaculos += 10 * this.factorNivel * this.obstaculos.length;
 
 	  this.camino = new Camino(this.puntos, this.longitud, this.numeroObstaculos);
 	  this.add(this.camino);
 
-	  this.obstaculos = this.camino.posicionObstaculos;
+	  this.obstaculos = this.camino.obstaculosGenerados;
 	  this.siguienteObstaculo = 0;
   }
 
@@ -158,6 +162,9 @@ class MyScene extends THREE.Scene {
   }
 
   comprobarColisiones() {
+	  // Esta es la posicion real del actor en el mundo
+	  // var posicionRealActor = this.personaje.actor.getWorldPosition(new THREE.Vector3());
+
 	  var posicion = this.personaje.position.clone();
 	  var posicionActor = this.personaje.actor.position.clone();
 	  var rotacionActual = this.personaje.rotation.clone();
@@ -173,18 +180,23 @@ class MyScene extends THREE.Scene {
 	  var siguiente = this.siguienteObstaculo;
 	  siguiente %= this.obstaculos.length;
 
+	  // comprobar que la distancia al actual siguiente obstaculo es menor
+	  // que la distancia al siguiente del siguiente actual, si estamos mas
+	  // cerca del segundo que del primero, entonces tenemos actualizar el
+	  // siguiente actual, es decir, buscamos que el siguiente sea el más próximo.
 	  if ((siguiente+1 < this.obstaculos.length)  			 &&
-		 posicion.distanceTo(this.obstaculos[siguiente]) >
-			 posicion.distanceTo(this.obstaculos[siguiente+1])) {
+		 posicion.distanceTo(this.obstaculos[siguiente].position) >
+			 posicion.distanceTo(this.obstaculos[siguiente+1].position)) {
 
 			 // avanzamos al siguiente al siquiente
 			 siguiente++;
-			 this.siguienteObstaculo++;
 	  }
 
-	  if (posicion.distanceTo(this.obstaculos[siguiente]) < 1) {
+	  if (posicion.distanceTo(this.obstaculos[siguiente].position) < 1) {
 		  alert("Ha habido colisión");
 	  }
+
+	  this.siguienteObstaculo = siguiente;
   }
 
   createCamera () {
@@ -202,6 +214,7 @@ class MyScene extends THREE.Scene {
 
     // Para el control de cámara usamos una clase que ya tiene implementado los movimientos de órbita
     this.cameraControl = new TrackballControls (this.camera, this.renderer.domElement);
+
     // Se configuran las velocidades de los movimientos
     this.cameraControl.rotateSpeed = 5;
     this.cameraControl.zoomSpeed = -2;
@@ -299,7 +312,7 @@ class MyScene extends THREE.Scene {
   getCamera () {
     // En principio se devuelve la única cámara que tenemos
     // Si hubiera varias cámaras, este método decidiría qué cámara devuelve cada vez que es consultado
-    return this.camera;
+    return this.camaraFinal;
   }
 
   setCameraAspect (ratio) {
@@ -333,20 +346,19 @@ class MyScene extends THREE.Scene {
 	 this.personaje.update();
 
 	 TWEEN.update();
+	 this.comprobarColisiones();
 
-	 // this.comprobarColisiones();
 
-	 var camaraFinal;
 	 if (this.guiControls.cameraPersonaje) {
-		  camaraFinal = this.personaje.camera;
+		  this.camaraFinal = this.personaje.camera;
 	 } else {
-		 camaraFinal = this.camera;
+		 this.camaraFinal = this.camera;
 		 // Se actualiza la posición de la cámara según su controlador
 		 this.cameraControl.update();
 	 }
 
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
-    this.renderer.render (this, camaraFinal);
+    this.renderer.render (this, this.camaraFinal);
 
 
     // Este método debe ser llamado cada vez que queramos visualizar la escena de nuevo.
@@ -354,7 +366,69 @@ class MyScene extends THREE.Scene {
     // Si no existiera esta línea,  update()  se ejecutaría solo la primera vez.
     requestAnimationFrame(() => this.update())
   }
+
+  onKeyDown (event) {
+    var x = event.which || event.keyCode;
+	 switch(x){
+		 case 37: x = MyScene.IZQUIERDA; break;
+		 case 38: x = MyScene.ARRIBA; 	break;
+		 case 39: x = MyScene.DERECHA; 	break;
+		 case 40: x = MyScene.ABAJO;		break;
+	 }
+
+	 switch (x) {
+  	 	case MyScene.ARRIBA:
+			this.personaje.goUp();
+  			console.log("arriba"); break;
+
+		case MyScene.ABAJO:
+			this.personaje.goDown();
+			console.log("abajo"); break;
+
+		case MyScene.IZQUIERDA:
+			this.personaje.goLeft();
+			console.log("izquierda"); break;
+
+		case MyScene.DERECHA:
+			this.personaje.goRight();
+			console.log("derecha"); break;
+
+		default:
+			console.log("Pulsaste " + x); break;
+	 }
+  }
+
+  getMouse (event) {
+    	var mouse = new THREE.Vector2 ();
+    	mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    	mouse.y = 1 - 2 * (event.clientY / window.innerHeight);
+    	return mouse;
+  	}
+
+  	onMouseDown (event) {
+		var mouse = this.getMouse (event);
+		this.camino.updateMatrixWorld();
+		this.updateMatrixWorld();
+
+		this.raycaster.setFromCamera (mouse, this.getCamera());
+		var pickedObjects = this.raycaster.intersectObjects (this.obstaculos, true);
+
+		if (pickedObjects.length > 0) {
+		  	var encontrado = pickedObjects[0].object;
+			var index = this.obstaculos.indexOf(encontrado);
+
+			this.obstaculos.splice(index, 1);
+			this.camino.remove(encontrado);
+	  }
+	}
 }
+
+MyScene.ARRIBA 	= 87;
+MyScene.ABAJO 		= 83;
+MyScene.IZQUIERDA = 65;
+MyScene.DERECHA 	= 68;
+
+
 
 /// La función   main
 $(function () {
@@ -364,6 +438,10 @@ $(function () {
 
   // Se añaden los listener de la aplicación. En este caso, el que va a comprobar cuándo se modifica el tamaño de la ventana de la aplicación.
   window.addEventListener ("resize", () => scene.onWindowResize());
+  window.addEventListener ("keydown", (event) => scene.onKeyDown (event), true);
+  window.addEventListener ("pointerdown", (event) => scene.onMouseDown(event), true);
+  window.addEventListener ("pointerup", (event) => {console.log("pointer up");}, true);
+
 
   // Que no se nos olvide, la primera visualización.
   scene.update();
