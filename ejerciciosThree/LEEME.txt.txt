@@ -1,0 +1,4 @@
+Descomprime este fichero en ejerciciosTHREE.
+La carpeta proyecto es el proyecto, la carpeta imgs
+son las imagenes, puedes remplazar tu carpeta o bien
+copiar el contenido de mi carpeta en la tuya.

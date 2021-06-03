@@ -43,6 +43,18 @@ class MyScene extends THREE.Scene {
     // Un suelo
     this.createGround ();
 
+	 var urls = [
+		 "../imgs/cube_interestellar/xpos.png",
+		 "../imgs/cube_interestellar/xneg.png",
+		 "../imgs/cube_interestellar/ypos.png",
+		 "../imgs/cube_interestellar/yneg.png",
+		 "../imgs/cube_interestellar/zpos.png",
+		 "../imgs/cube_interestellar/zneg.png"
+	 ];
+
+	 var textureCube = new THREE.CubeTextureLoader().load( urls );
+	 this.background = textureCube;
+
     // Y unos ejes. Imprescindibles para orientarnos sobre dónde están las cosas
     this.axis = new THREE.AxesHelper (5);
     this.add (this.axis);

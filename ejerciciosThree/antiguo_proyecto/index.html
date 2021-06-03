@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title> FishRun </title>
+    <meta charset="utf-8">
+    <script type="text/javascript" src="../libs/jquery.js"></script>
+    <script type="module" src="MyScene.js"></script>
+
+    <style>
+        body{
+            margin: 0;
+            overflow: hidden;
+        }
+
+		  .mensaje {
+				position:absolute;
+				right:100px;
+				top:10px;
+				color: white;
+		  }
+
+		  .estado {
+			  position: absolute;
+			  left: 100px;
+			  top: 10px;
+			  color: white;
+		  }
+
+    </style>
+</head>
+	<body>
+
+
+		<div class="mensaje" id="mensaje">
+		</div>
+
+		<!-- Div which will show several messages -->
+		<div class="estado" id="estado">
+
+		</div>
+
+		<!-- Div which will hold the Output -->
+		<div id="WebGL-output">
+		</div>
+	</body>
+</html>

@@ -1,0 +1,33 @@
+# Blender MTL File: 'Bottle.blend'
+# Material Count: 3
+
+newmtl Bottle-glass
+Ns 900.000000
+Ka 1.000000 1.000000 1.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.0 0.0 0.0
+Ni 1.450000
+d 1.000000
+illum 2
+
+newmtl Cap-material
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.0 0.0 0.0
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:\\Users\\jumab\\Desktop\\30c3cd1b9d71b632c847156fc6f8df58.jpg
+
+newmtl Cap_color
+Ns 440.999985
+Ka 1.000000 1.000000 1.000000
+Kd 0.004391 0.028426 0.366253
+Ks 0.500000 0.500000 0.500000
+Ke 0.0 0.0 0.0
+Ni 1.450000
+d 1.000000
+illum 2
