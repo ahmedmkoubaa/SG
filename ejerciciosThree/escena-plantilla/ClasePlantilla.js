@@ -5,10 +5,16 @@ class ClasePlantilla extends THREE.Object3D {
 		super();
 		this.createGUI(gui, titleGui);
 
+		const recompensaTextura = new THREE.TextureLoader().load( "../imgs/mistery.png" );
+		texture.wrapS = THREE.RepeatWrapping;
+		texture.wrapT = THREE.RepeatWrapping;
+
+		var material = new THREE.MeshPhongMaterial({map: recompensaTextura});
+
 		// CREACION DE OBJETOS
 		this.cajaPrueba = new THREE.Mesh(
-			new THREE.BoxGeometry(2,3,2),
-			new THREE.MeshPhongMaterial({color: 0xff0000})
+			new THREE.BoxGeometry(2,2,2),
+			material
 		);
 
 		this.add(this.cajaPrueba);

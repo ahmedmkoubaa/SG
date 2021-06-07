@@ -21,15 +21,13 @@ import { TipoRecompensa } from './TipoRecompensa.js'
  * Usaremos una clase derivada de la clase Scene de Three.js para llevar el control de la escena y de todo lo que ocurre en ella.
  */
 
-class MyScene extends THREE.Scene {
+class Juego extends THREE.Scene {
   constructor (myCanvas) {
     super();
 
     // Lo primero, crear el visualizador, pasándole el lienzo sobre el que realizar los renderizados.
     this.renderer = this.createRenderer(myCanvas);
 
-
-    // Construimos los distinos elementos que tendremos en la escena
 	 // --------------------------- OBSERVACIONES ---------------------------- //
 	 // Con el proposito de facilitar la correccion al examinador
 	 // se han marcado las zonas mas importantes del codigo con la
@@ -72,8 +70,6 @@ class MyScene extends THREE.Scene {
 
 	 this.pickable = this.recompensas;			// vector de elementos que se pueden seleccionar clicando
 
-	 // this.personaje.position.set(this.camino.spline.getPointAt(0));
-
 	 // -----------------------------------------------------------------------//
 	 // CREACION DE ANIMACIONES
 
@@ -97,9 +93,8 @@ class MyScene extends THREE.Scene {
     // Tendremos una cámara con un control de movimiento con el ratón
     this.createCamera ();
 
-
+	 // crear textura de fondo
 	 this.createBackground();
-
 
   }
 
@@ -147,7 +142,10 @@ class MyScene extends THREE.Scene {
 
 	  // Notificamos al usuario
 	  this.mensajeInicial =
-					"FIN DEL JUEGO :( <br> Tu puntuación es " + puntuacion + " <br> PULSA ESPACIO PARA REINICIAR";
+					"<p class='titulo'>" +
+					"FIN DEL JUEGO :( <br> Tu puntuación es " + puntuacion + " <br> " +
+					"PULSA ESPACIO PARA REINICIAR" +
+					"</p>";
 
 	  // Actualizamos el estado
 	  this.actualizarEstado();
@@ -172,9 +170,8 @@ class MyScene extends THREE.Scene {
 		  // Cambiar color a verde a modo de notificacion al usuario
 		  that.camino.apariencia.material.color.setHex(0xFF0000);
 		  that.personaje.vidas--;	// actualizar numero de vidas
-		  that.mensaje = "Te has chocado y has perdido vidas";
 
-		  // notificar html
+		  that.mensaje = "Te has chocado y has perdido vidas"; // notificar html
 	 })
 	 .onComplete(function() {
 
@@ -440,6 +437,7 @@ class MyScene extends THREE.Scene {
 		  document.getElementById ("mensaje").innerHTML = " ";
 		  document.getElementById("estado").innerHTML = " ";
 	  }
+
 	  document.getElementById("mensajeInicial").innerHTML = this.mensajeInicial;
   }
 
@@ -625,34 +623,34 @@ class MyScene extends THREE.Scene {
 	 // 37, 38, 39, 40 se corresponden con las teclas de las flechas
 	 // usamos este switch para detectarlas y transcribirlas
 	 switch(x){
-		 case 37: x = MyScene.IZQUIERDA; break;
-		 case 38: x = MyScene.ARRIBA; 	break;
-		 case 39: x = MyScene.DERECHA; 	break;
-		 case 40: x = MyScene.ABAJO;		break;
+		 case 37: x = Juego.IZQUIERDA; break;
+		 case 38: x = Juego.ARRIBA; 	break;
+		 case 39: x = Juego.DERECHA; 	break;
+		 case 40: x = Juego.ABAJO;		break;
 	 }
 
 	 // Decidir que tecla se pulso y que hacer en consecuencia
 	 switch (x) {
-  	 	case MyScene.ARRIBA:
+  	 	case Juego.ARRIBA:
 			this.personaje.goUp();
   			console.log("arriba"); break;
 
-		case MyScene.ABAJO:
+		case Juego.ABAJO:
 			this.personaje.goDown();
 			console.log("abajo"); break;
 
-		case MyScene.IZQUIERDA:
+		case Juego.IZQUIERDA:
 			this.personaje.goLeft();
 			console.log("izquierda"); break;
 
-		case MyScene.DERECHA:
+		case Juego.DERECHA:
 			this.personaje.goRight();
 			console.log("derecha"); break;
 
-		case MyScene.CAMARA:
+		case Juego.CAMARA:
 			this.personaje.cambiarCamara(); break;
 
-		case MyScene.COMENZAR:
+		case Juego.COMENZAR:
 			this.iniciarPartida();
 			break;
 
@@ -668,7 +666,9 @@ class MyScene extends THREE.Scene {
     	return mouse;
   	}
 
-  	onMouseDown (event) {
+  onMouseDown (event) {
+	   this.ultimaPulsacion = this.getMouse(event);
+
 		var mouse = this.getMouse (event);
 		this.camino.updateMatrixWorld();
 		this.updateMatrixWorld();
@@ -707,6 +707,8 @@ class MyScene extends THREE.Scene {
 					this.puntuacion += this.bonusObstaculo;
 
 					// si no encontré el indice del objeto picado, voy al padre
+					// para los modelos jerarquicos con mas de un mesh,
+					// obtenemos solo un mesh del pick
 					if (index < 0) {
 						encontrado = encontrado.parent;
 						index = this.obstaculos.indexOf(encontrado);
@@ -714,34 +716,13 @@ class MyScene extends THREE.Scene {
 
 					// si el padre no lo contiene entonces voy al padre de este
 					// si no encontré el indice del objeto picado, voy al padre
+					// se hace para los modelos, ya que usamos MyLoadedModel y
+					// nos devuelve un nodo con el mesh del modelo y añadimos el
+					// nodo completo
 					if (index < 0) {
 						encontrado = encontrado.parent;
 						index = this.obstaculos.indexOf(encontrado);
 					}
-
-
-					console.log(encontrado);
-
-
-
-					// Al ser un modelo cargado con la clase MyLoadedModel solo
-					// lo podemos identificar por la posicion en la que se encuentra
-					// La posicion es del myloadedmodel, que es lo que generamos como
-					// obstaculo
-					// var myLoadedModel = encontrado.parent.parent;
-					// var pos = myLoadedModel.position;
-					//
-					// console.log("Hemos encontrado:  ");
-					// console.log(encontrado);
-					//
-					// // Buscamos el indice en el vector
-					// this.pickable.forEach((obj, i) => {
-					// 	if (obj.position == pos) {
-					// 		console.log("Hemos encontrado el indice");
-					// 		encontrado = myLoadedModel;
-					// 		return (index = i);
-					// 	}
-					// });
 
 					break;
 			}
@@ -752,33 +733,71 @@ class MyScene extends THREE.Scene {
 			this.camino.remove(encontrado);
 	  }
 	}
+
+	// Cuando detecta que se levanto el raton calcula el desplazamiento entre
+	// la pulsacion y lo transcribe a evento de teclado, es una especie de control
+	// tactil para dispositivos moviles o sin teclado
+	onMouseUp(event) {
+		var final = this.getMouse(event);
+		var inicio = this.ultimaPulsacion;
+
+		// diferencia minima para diferenciar clic de desplazamiento
+		const umbralDif = 0.2;
+
+		var difX = final.x - inicio.x;
+		var difY = final.y - inicio.y;
+
+		// evento que se realizara
+		var evento;
+
+
+		// Si hubo algun desplazamiento, procedemos a calcular de que tipo
+		if (Math.abs(difX) > umbralDif ||  Math.abs(difY) > umbralDif) {
+
+			// Buscamos el movimiento mas largo y en base a este desplazaremos
+			// el personaje hacia un lado u otro como hacemos con el teclado
+			if ( Math.abs(difX) > Math.abs(difY) ) {
+				// Si positivo entonces derecha, otro caso izquierda
+				if (difX > 0)	evento = {which: Juego.DERECHA};
+				else				evento = {which: Juego.IZQUIERDA};
+			} else {
+				if (difY > 0)  evento = {which: Juego.ARRIBA};
+				else 				evento = {which: Juego.ABAJO};
+			}
+
+			// Tratarlo como un evento de teclado
+			this.onKeyDown(evento);
+		}
+
+
+	}
 }
 
 // TECLAS WASD
-MyScene.ARRIBA 	= 87;
-MyScene.ABAJO 		= 83;
-MyScene.IZQUIERDA = 65;
-MyScene.DERECHA 	= 68;
+Juego.ARRIBA 	 = 87;
+Juego.ABAJO 	 = 83;
+Juego.IZQUIERDA = 65;
+Juego.DERECHA 	 = 68;
 
 // Tecla para cambiar de camara
-MyScene.CAMARA = 67;
+Juego.CAMARA = 67;
 
 // Tecla para comenzar la partida
-MyScene.COMENZAR = 32;
+Juego.COMENZAR = 32;
 
 /// La función   main
 $(function () {
 
   // Se instancia la escena pasándole el  div  que se ha creado en el html para visualizar
-  var scene = new MyScene("#WebGL-output");
+  var juego = new Juego("#WebGL-output");
 
   // Se añaden los listener de la aplicación. En este caso, el que va a comprobar cuándo se modifica el tamaño de la ventana de la aplicación.
-  window.addEventListener ("resize", () => scene.onWindowResize());
-  window.addEventListener ("keydown", (event) => scene.onKeyDown (event), true);
-  window.addEventListener ("pointerdown", (event) => scene.onMouseDown(event), true);
-  window.addEventListener ("pointerup", (event) => {console.log("pointer up");}, true);
+  window.addEventListener ("resize", () => juego.onWindowResize());
+  window.addEventListener ("keydown", (event) => juego.onKeyDown (event), true);
+  window.addEventListener ("pointerdown", (event) => juego.onMouseDown(event), true);
+  window.addEventListener ("pointerup", (event) => juego.onMouseUp(event), true);
 
 
   // Que no se nos olvide, la primera visualización.
-  scene.update();
+  juego.update();
 });

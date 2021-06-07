@@ -16,6 +16,9 @@ class Camino extends THREE.Object3D {
 
 		// textura para simular burbujas
 		this.textura = new THREE.TextureLoader().load( '../imgs/bubble.jpg');
+		this.texturaRecompensa = new THREE.TextureLoader().load( "../imgs/mistery.png" );
+		this.texturaRecompensa.wrapS = THREE.RepeatWrapping;
+		this.texturaRecompensa.wrapT = THREE.RepeatWrapping;
 
 		// recorrido que vamos a realizar
 		this.spline = this.generarRecorridoAleatorio(puntos, longitud);
@@ -137,8 +140,13 @@ class Camino extends THREE.Object3D {
 			// Siguiente punto del recorrido donde poner un obstaculo
 			var pos = spline.getPointAt(indice);
 
+			// copia para reutilizar obstaculos previos
+			var posRed = pos.clone();
+
 			// punto anterior del recorrido, mirar hacia alla
 			target = spline.getPointAt(indiceAnterior);
+
+
 
 			var sitio = Math.floor(Math.random() * numeroPosiciones);
 			var dispersion = maxDispersion;
@@ -179,11 +187,16 @@ class Camino extends THREE.Object3D {
 				// poner el anterior obstaculo en este recorrido
 				var anterior = this.obstaculosGenerados[i];
 
-				if (anterior.esRedArriba == true) 		 pos.y += dispersion;
-				else if ( anterior.esRedAbajo == true ) pos.y -= dispersion;
+				if (anterior.esRed == true) {
+					if (anterior.esRedArriba == true) 		 posRed.y += dispersion;
+					else if ( anterior.esRedAbajo == true ) posRed.y -= dispersion;
 
-				anterior.position.copy(pos);
-				anterior.lookAt(target);
+					pos = posRed.clone();	// al ser la posicion final es de red
+				}
+
+				// Modificar los elementos del vector a los que hacemos referencia
+				this.obstaculosGenerados[i].position.copy(pos);
+				this.obstaculosGenerados[i].lookAt(target);
 			}
 			else {
 				var obstaculo;
@@ -360,12 +373,15 @@ class Camino extends THREE.Object3D {
 		return red;
 	}
 
+	// Devuelvo un objeto recompensa
 	getNuevaRecompensa() {
+		// le asigna la textura correspondiente
 		var recompensa = new THREE.Mesh(
 			new THREE.BoxBufferGeometry(2,2,2),
-			new THREE.MeshNormalMaterial({
+			new THREE.MeshPhongMaterial({
 				opacity: 0.5,
-				transparent: true
+				transparent: true,
+				map: this.texturaRecompensa
 			})
 		);
 
