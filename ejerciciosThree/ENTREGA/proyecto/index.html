@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title> FishRun </title>
+    <meta charset="utf-8">
+    <script type="text/javascript" src="../libs/jquery.js"></script>
+    <script type="module" src="Juego.js"></script>
+
+    <style>
+        body{
+			  font-family: 'Helvetica', 'Arial', sans-serif;
+            margin: 0;
+            overflow: hidden;
+        }
+
+		  .mensaje {
+				position:absolute;
+				right:100px;
+				top:10px;
+				color: white;
+		  }
+
+		  .estado {
+			  position: absolute;
+			  left: 100px;
+			  top: 10px;
+			  color: white;
+		  }
+
+		  .inicial{
+			  display: flex;
+			  justify-content: center;
+			  align-items: center;
+
+			  position: absolute;
+			  width: 100%;
+			  height: 100%;
+
+			 background: transparent;
+		  }
+
+		  #mensajeInicial{
+			 font-size: 2em;
+			 color: white;
+
+			 align-items: center;
+			 align-self: center;
+			 justify-content: center;
+
+			 width: 100%;
+			 text-align: center;
+
+			 background: rgba(55,55,55,0.6);
+		  }
+
+		  .titulo {
+			  font-size: 3em;
+			  font-weight: bold;
+			  padding: 10px;
+			  margin-top: 10px;
+		  }
+
+    </style>
+</head>
+	<body>
+
+
+		<div class="mensaje" id="mensaje">
+		</div>
+
+		<!-- Div which will show several messages -->
+		<div class="estado" id="estado">
+
+		</div>
+
+		<div id="inicial" class="inicial">
+			<section id="mensajeInicial">
+				<p class="titulo"> PULSA ESPACIO PARA COMENZAR </p>
+
+				<ul>
+					<li> Usa WASD o flechas para moverte</li>
+					<li> Clica las cajas misterioras para obtener recompensas </li>
+					<li> Esquiva los obstaculos y evita chocarte con ellos </li>
+					<li> Ve con ojo, el camino tiene giros que darán la vuelta al mundo </li>
+				</ul>
+
+			</section>
+		</div>
+
+		<!-- Div which will hold the Output -->
+		<div id="WebGL-output">
+		</div>
+
+	</body>
+</html>

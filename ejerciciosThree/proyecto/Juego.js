@@ -11,8 +11,6 @@ import * as TWEEN from '../libs/tween.esm.js'
 // Clases de mi proyecto
 import { Camino } from './Camino.js'
 import { Personaje } from './Personaje.js'
-// import { ClasePlantilla } from './ClasePlantilla.js'
-// import { MyLoadedModel } from './MyLoadedModel.js'
 
 import { TipoRecompensa } from './TipoRecompensa.js'
 
@@ -54,7 +52,7 @@ class Juego extends THREE.Scene {
 	 this.add(this.personaje);
 
 	 // crear camino, pasar parametros necesarios
-	 this.camino = new Camino(this.puntos, this.longitud, this.numeroObstaculos, this.personaje);
+	 this.camino = new Camino(this.puntos, this.longitud, this.numeroObstaculos);
 	 this.add(this.camino);
 
 
@@ -237,10 +235,10 @@ class Juego extends THREE.Scene {
 	  var origen = {x:0};
 	  var destino = {x:1};
 
-	  this.animacionVertTodo = new TWEEN.Tween(origen).to(destino, tiempo);
+	  this.animacionVerTodo = new TWEEN.Tween(origen).to(destino, tiempo);
 
 	  var that = this;
-	  this.animacionVertTodo
+	  this.animacionVerTodo
 	  .onStart(function(){
 		  // that.camino.apariencia.material.transparent = true;
 		  that.camino.apariencia.material.opacity = 0.3;
@@ -337,7 +335,6 @@ class Juego extends THREE.Scene {
 	  .chain(this.recorrerCamino);
   }
 
-
   // Funcion que se ejecuta al terminar un nivel actualiza los parametros
   // de nivel y crea un nuevo recorrido algo mas complicado que el anterior
   nuevoNivel() {
@@ -353,7 +350,7 @@ class Juego extends THREE.Scene {
 	  }
 
 	  // crear nuevo camino con nuevos parametros
-	  this.camino.regenerar(this.puntos, this.longitud, this.numeroObstaculos, this.personaje);
+	  this.camino.regenerar(this.puntos, this.longitud, this.numeroObstaculos);
 
 	  // reinicializar antiguos elementos del camino apuntando a vacio
 	  this.obstaculos = this.recompenas = this.pickable = [];
@@ -442,27 +439,9 @@ class Juego extends THREE.Scene {
   }
 
   createCamera () {
-    // Para crear una cámara le indicamos
-    //   El ángulo del campo de visión en grados sexagesimales
-    //   La razón de aspecto ancho/alto
-    //   Los planos de recorte cercano y lejano
-    this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-    // También se indica dónde se coloca
-    this.camera.position.set (20, 10, 20);
-    // Y hacia dónde mira
-    var look = new THREE.Vector3 (0,0,0);
-    this.camera.lookAt(look);
-    this.add (this.camera);
 
-    // Para el control de cámara usamos una clase que ya tiene implementado los movimientos de órbita
-    this.cameraControl = new TrackballControls (this.camera, this.renderer.domElement);
-
-    // Se configuran las velocidades de los movimientos
-    this.cameraControl.rotateSpeed = 5;
-    this.cameraControl.zoomSpeed = -2;
-    this.cameraControl.panSpeed = 0.5;
-    // Debe orbitar con respecto al punto de mira de la cámara
-    this.cameraControl.target = look;
+	  // Camara del juego es la camara del personaje
+	  this.camera = this.personaje.getCamera();
   }
 
   // metodo para crear un fondo de escena, cargamos imagenes
@@ -490,33 +469,10 @@ class Juego extends THREE.Scene {
 	  ];
 
 	  var textureCube = new THREE.CubeTextureLoader().load(urls);
-	  this.background=textureCube;
+	  this.background = textureCube;
   }
 
-  createGround () {
-    // El suelo es un Mesh, necesita una geometría y un material.
-
-    // La geometría es una caja con muy poca altura
-    var geometryGround = new THREE.BoxGeometry (50,0.2,50);
-	 // var geometryGround = new THREE.CylinderGeometry(10,10, 0.1, 40);
-
-    // El material se hará con una textura de madera
-    var texture = new THREE.TextureLoader().load('../imgs/wood.jpg');
-    var materialGround = new THREE.MeshPhongMaterial ({map: texture});
-
-    // Ya se puede construir el Mesh
-    var ground = new THREE.Mesh (geometryGround, materialGround);
-
-    // Todas las figuras se crean centradas en el origen.
-    // El suelo lo bajamos la mitad de su altura para que el origen del mundo se quede en su lado superior
-    ground.position.y = -0.1;
-
-    // Que no se nos olvide añadirlo a la escena, que en este caso es  this
-    this.add (ground);
-  }
-
-
-
+  // crear luces que se usaran es la escena juego
   createLights () {
     // Se crea una luz ambiental, evita que se vean complentamente negras las zonas donde no incide de manera directa una fuente de luz
     // La luz ambiental solo tiene un color y una intensidad
@@ -533,6 +489,7 @@ class Juego extends THREE.Scene {
 
   }
 
+  // Crea render de la escena
   createRenderer (myCanvas) {
     // Se recibe el lienzo sobre el que se van a hacer los renderizados. Un div definido en el html.
 
@@ -553,12 +510,14 @@ class Juego extends THREE.Scene {
     return renderer;
   }
 
+  // Devuelve la camara que se usa
   getCamera () {
     // En principio se devuelve la única cámara que tenemos
     // Si hubiera varias cámaras, este método decidiría qué cámara devuelve cada vez que es consultado
-    return this.camaraFinal;
+    return this.camera;
   }
 
+  // Asigna un ratio a la camera
   setCameraAspect (ratio) {
     // Cada vez que el usuario modifica el tamaño de la ventana desde el gestor de ventanas de
     // su sistema operativo hay que actualizar el ratio de aspecto de la cámara
@@ -567,6 +526,7 @@ class Juego extends THREE.Scene {
     this.camera.updateProjectionMatrix();
   }
 
+  // Comportamiento ante un redimensionado
   onWindowResize () {
     // Este método es llamado cada vez que el usuario modifica el tamapo de la ventana de la aplicación
     // Hay que actualizar el ratio de aspecto de la cámara
@@ -576,6 +536,7 @@ class Juego extends THREE.Scene {
     this.renderer.setSize (window.innerWidth, window.innerHeight);
   }
 
+  // actualiza la escena
   update () {
 
     // Se muestran o no los ejes según lo que idique la GUI
@@ -603,11 +564,8 @@ class Juego extends THREE.Scene {
 		 }
 	 }
 
-	 // actualizar informacion de la vista
-	 this.camaraFinal = this.personaje.getCamera();
-
     // Le decimos al renderizador "visualiza la escena que te indico usando la cámara que te estoy pasando"
-    this.renderer.render (this, this.camaraFinal);
+    this.renderer.render (this, this.getCamera());
 
 
     // Este método debe ser llamado cada vez que queramos visualizar la escena de nuevo.
@@ -648,7 +606,9 @@ class Juego extends THREE.Scene {
 			console.log("derecha"); break;
 
 		case Juego.CAMARA:
-			this.personaje.cambiarCamara(); break;
+			this.personaje.cambiarCamara();
+			this.camera = this.personaje.getCamera();
+			break;
 
 		case Juego.COMENZAR:
 			this.iniciarPartida();
@@ -659,6 +619,7 @@ class Juego extends THREE.Scene {
 	 }
   }
 
+  // Obtiene la posicion del raton en pantalla
   getMouse (event) {
     	var mouse = new THREE.Vector2 ();
     	mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -666,6 +627,7 @@ class Juego extends THREE.Scene {
     	return mouse;
   	}
 
+  // Comportamiento cuando se pulsa una tecla
   onMouseDown (event) {
 	   this.ultimaPulsacion = this.getMouse(event);
 
@@ -683,7 +645,7 @@ class Juego extends THREE.Scene {
 			switch (encontrado.tipo) {
 
 				case TipoRecompensa.VER_TODO:
-					this.animacionVertTodo.start();
+					this.animacionVerTodo.start();
 					break;
 
 				case TipoRecompensa.VIDA_EXTRA:

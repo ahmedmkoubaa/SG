@@ -4,7 +4,7 @@ import * as Constants from './Constantes.js'
 // import { MyLoadedModel } from './MyLoadedModel.js'
 
 class Personaje extends THREE.Object3D {
-	constructor (vidas = 1, maxDesplzamiento){
+	constructor (vidas = 1, maxDesplazamiento){
 		super();
 
 		// CREACION DE OBJETOS
@@ -12,7 +12,7 @@ class Personaje extends THREE.Object3D {
 		this.createCameras();
 
 		this.vidas = vidas;
-		this.maxDesplzamiento = maxDesplzamiento;
+		this.maxDesplazamiento = maxDesplazamiento;
 
 
 		// CREACION DE TRANSFORMACIONES ELEMENTALES
@@ -80,56 +80,46 @@ class Personaje extends THREE.Object3D {
 
 	// crea y añade el actor
 	createActor(){
-		// var texture = new THREE.TextureLoader().load('../imgs/cara.jpg');
-		// var material = new THREE.MeshNormalMaterial ({color: 0xff0000});
-		//
-		// this.actor = new THREE.Mesh(
-		// 	new THREE.SphereBufferGeometry(2, 20, 20),
-		// 	material
-		// );
-
-		this.actor=new Pez();
-		// this.actor.position.z += 5;
-		// this.actor.position.y += 1;
+		this.actor = new Pez();
 		this.add(this.actor);
 	}
 
 	goUp(){
-		if ( this.actor.position.y < this.maxDesplzamiento ){
+		if ( this.actor.position.y < this.maxDesplazamiento ){
 
-			this.actor.saltar(this.actor.position.y,this.actor.position.y + this.maxDesplzamiento);
-			this.actor.position.y += this.maxDesplzamiento;
-			this.luz.position.y += this.maxDesplzamiento;
-			this.camera2.position.y += this.maxDesplzamiento;
+			this.actor.saltar(this.actor.position.y,this.actor.position.y + this.maxDesplazamiento);
+			this.actor.position.y += this.maxDesplazamiento;
+			this.luz.position.y += this.maxDesplazamiento;
+			this.camera2.position.y += this.maxDesplazamiento;
 		}
 	}
 
 	goDown() {
-		if ( this.actor.position.y > -this.maxDesplzamiento ){
-			this.actor.goDown(this.actor.position.y,this.actor.position.y - this.maxDesplzamiento);
-			this.actor.position.y -= this.maxDesplzamiento;
-			this.luz.position.y -= this.maxDesplzamiento;
-			this.camera2.position.y -= this.maxDesplzamiento;
+		if ( this.actor.position.y > -this.maxDesplazamiento ){
+			this.actor.goDown(this.actor.position.y,this.actor.position.y - this.maxDesplazamiento);
+			this.actor.position.y -= this.maxDesplazamiento;
+			this.luz.position.y -= this.maxDesplazamiento;
+			this.camera2.position.y -= this.maxDesplazamiento;
 		}
 
 	}
 
 	goLeft() {
-		if ( this.actor.position.x < this.maxDesplzamiento ){
+		if ( this.actor.position.x < this.maxDesplazamiento ){
 			this.actor.girarIzquierda(0,0);
-			this.actor.position.x += this.maxDesplzamiento;
-			this.luz.position.x += this.maxDesplzamiento;
-			this.camera2.position.x += this.maxDesplzamiento;
+			this.actor.position.x += this.maxDesplazamiento;
+			this.luz.position.x += this.maxDesplazamiento;
+			this.camera2.position.x += this.maxDesplazamiento;
 
 		}
 	}
 
 	goRight() {
-		if ( this.actor.position.x > -this.maxDesplzamiento ){
+		if ( this.actor.position.x > -this.maxDesplazamiento ){
 			this.actor.girarDerecha(0,0);
-			this.actor.position.x -= this.maxDesplzamiento;
-			this.luz.position.x -= this.maxDesplzamiento;
-			this.camera2.position.x -= this.maxDesplzamiento;
+			this.actor.position.x -= this.maxDesplazamiento;
+			this.luz.position.x -= this.maxDesplazamiento;
+			this.camera2.position.x -= this.maxDesplazamiento;
 		}
 	}
 

@@ -9,13 +9,13 @@ import {RedAbajo} from './red/red.js'
 
 class Camino extends THREE.Object3D {
 	constructor (puntos = 10, longitud = 10,										// Parametros para el camino
-					numeroObstaculos = 10, personaje, maxDesplzamientoObstaculo = 5,		// Parametros para obstaculos del camino
+					numeroObstaculos = 10, maxDesplzamientoObstaculo = 5,		// Parametros para obstaculos del camino
 					numeroRecompensas = 10, maxDesplzamientoRecompensa = 5,	// Parametros para recompensas del camino
 					maxRadio = 10){														// Parametro para apariencia del camino
 		super();
 
 		// textura para simular burbujas
-		this.textura = new THREE.TextureLoader().load( '../imgs/bubble.jpg');
+		this.texturaObstaculo = new THREE.TextureLoader().load( '../imgs/bubble.jpg');
 		this.texturaRecompensa = new THREE.TextureLoader().load( "../imgs/mistery.png" );
 		this.texturaRecompensa.wrapS = THREE.RepeatWrapping;
 		this.texturaRecompensa.wrapT = THREE.RepeatWrapping;
@@ -29,7 +29,7 @@ class Camino extends THREE.Object3D {
 		// vector de recompensas que nos encontraremos en el camino
 		this.recompensasGeneradas = [];
 
-		this.generarObstaculos(this.spline, numeroObstaculos, maxDesplzamientoObstaculo, personaje );
+		this.generarObstaculos(this.spline, numeroObstaculos, maxDesplzamientoObstaculo );
 		this.generarRecompensas(this.spline, numeroRecompensas, maxDesplzamientoRecompensa );
 
 		this.forma = this.crearFormaDeTunelCircular(maxRadio);
@@ -56,7 +56,7 @@ class Camino extends THREE.Object3D {
 
 	// crea nuevo recorrido, con apariencia incluida y
 	// nuevos obstaculos y recompensas
-	regenerar(puntos, longitud, numeroObstaculos, personaje,
+	regenerar(puntos, longitud, numeroObstaculos,
 		 		numeroRecompensas = 10, maxDesplzamientoObstaculo = 5,
 				maxDesplzamientoRecompensa = 5) {
 
@@ -66,7 +66,7 @@ class Camino extends THREE.Object3D {
 		this.spline = this.generarRecorridoAleatorio(puntos, longitud);
 
 		// nuevos items del camino
-		this.generarObstaculos(this.spline, numeroObstaculos, maxDesplzamientoObstaculo, personaje);
+		this.generarObstaculos(this.spline, numeroObstaculos, maxDesplzamientoObstaculo);
 		this.generarRecompensas(this.spline, numeroRecompensas, maxDesplzamientoRecompensa);
 
 		// forma del camino
@@ -118,16 +118,13 @@ class Camino extends THREE.Object3D {
 
 	// Genera objetos y los dispersa por el camino pasado como parametro
 	// target se puede para orientarse a un punto concreto
-	generarObstaculos(spline, numeroObstaculos, maxDispersion, personaje) {
+	generarObstaculos(spline, numeroObstaculos, maxDispersion) {
 		// this.obstaculosGenerados = [];
 
 		// se refiere al numero de posiciones en las que puede
 		// aparecer un obstaculo con referencia al spline
 		const numeroPosiciones = 9;
 		var anteriores = this.obstaculosGenerados.length;
-
-		// posicion en la que se encuentra el personaje
-		var target = personaje.actor.position;
 
 		// sumamos 1 para evitar poner obstaculos en la linea de salida
 		const finCamino = numeroObstaculos + 1;
@@ -144,9 +141,7 @@ class Camino extends THREE.Object3D {
 			var posRed = pos.clone();
 
 			// punto anterior del recorrido, mirar hacia alla
-			target = spline.getPointAt(indiceAnterior);
-
-
+			var target = spline.getPointAt(indiceAnterior);
 
 			var sitio = Math.floor(Math.random() * numeroPosiciones);
 			var dispersion = maxDispersion;
@@ -289,7 +284,7 @@ class Camino extends THREE.Object3D {
 		var obstaculo = new THREE.Mesh(
 			new THREE.SphereBufferGeometry(1.5,10,10),
 			new THREE.MeshPhongMaterial({color:0xffffff,
-				envMap: this.textura,
+				envMap: this.texturaObstaculo,
 			})
 		);
 
